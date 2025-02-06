@@ -38,7 +38,9 @@ regd_users.post("/login", (req, res) => {
   let token = jwt.sign({ username: username }, TOKEN_HEADER_KEY, {
     expiresIn: 60 * 60,
   });
-  req.session.authorization = token;
+  req.session.authorization = {
+    token, username
+  };
 
   return res.status(200).json({ message: "Login successful" });
 });
@@ -65,10 +67,25 @@ regd_users.post("/register", (req, res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  let username = req.user.username;
+  
+  let isbn = req.params.isbn;
+  let review = req.body.review;
+
+  if (!isbn || !review) {
+    return res.status(400).json({ message: "Invalid ISBN or review" });
+  }
+
+  if (books[isbn] === undefined) {
+    return res.status(404).json({ message: "Book not found" });
+  }
+
+  books[isbn].reviews[username] = review.description;
+
+  return res.status(200).json({ message: "Review added successfully" });
 });
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
+module.exports.TOKEN_HEADER_KEY = TOKEN_HEADER_KEY;

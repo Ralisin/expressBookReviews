@@ -8,6 +8,8 @@ const session = require("express-session");
 const customer_routes = require("./router/auth_users.js").authenticated;
 const genl_routes = require("./router/general.js").general;
 
+const TOKEN_HEADER_KEY = require("./router/auth_users.js").TOKEN_HEADER_KEY;
+
 // Import from env file
 const JWT_SECRET_KEY = "fingerprint_customer";
 
@@ -25,8 +27,6 @@ app.use(
 );
 
 app.use("/customer/auth/*", function auth(req, res, next) {
-  console.log(req.session.authorization);
-
   let token = req.session.authorization['token'];
 
   if (!token) return res.status(403).json({ message: "Forbidden" });
