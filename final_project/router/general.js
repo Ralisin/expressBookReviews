@@ -1,7 +1,6 @@
 const express = require("express");
 let books = require("./booksdb.js");
-let isValid = require("./auth_users.js").isValid;
-let users = require("./auth_users.js").users;
+
 const public_users = express.Router();
 
 public_users.post("/register", (req, res) => {
@@ -11,7 +10,17 @@ public_users.post("/register", (req, res) => {
 
 // Get the book list available in the shop
 public_users.get("/", function (req, res) {
-  return res.status(200).send(books);
+  let retrieveBookPromise = new Promise((resolve, reject) => {
+    if (Object.keys(books).length === 0) {
+      reject({ message: "No books available" });
+    } else {
+      resolve();
+    }
+  });
+
+  retrieveBookPromise.then(() => {
+    return res.status(200).send(books);
+  });
 });
 
 // Get book details based on ISBN
@@ -29,7 +38,9 @@ public_users.get("/isbn/:isbn", function (req, res) {
 public_users.get("/author/:author", function (req, res) {
   let author = req.params.author;
 
-  let author_books = Object.values(books).filter((book) => book.author === author);
+  let author_books = Object.values(books).filter(
+    (book) => book.author === author
+  );
 
   console.log(author_books);
 
