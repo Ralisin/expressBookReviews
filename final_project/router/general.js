@@ -71,13 +71,21 @@ public_users.get("/author/:author", function (req, res) {
 public_users.get("/title/:title", function (req, res) {
   let title = req.params.title;
 
-  let title_books = Object.values(books).filter((book) => book.title === title);
+  let retrieveBookListByTitlePromise = new Promise((resolve, reject) => {
+    let title_books = Object.values(books).filter((book) => book.title === title);
 
-  if (title_books.length > 0) {
+    if (title_books.length > 0) {
+      resolve(title_books);
+    } else {
+      reject({ message: "Title not found" });
+    }
+  });
+
+  retrieveBookListByTitlePromise.then((title_books) => {
     return res.status(200).json(title_books);
-  } else {
-    return res.status(404).json({ message: "Title not found" });
-  }
+  }).catch((error) => {
+    return res.status(404).json({ message: error });
+  });
 });
 
 //  Get book review
