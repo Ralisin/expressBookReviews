@@ -10,7 +10,7 @@ public_users.post("/register", (req, res) => {
 
 // Get the book list available in the shop
 public_users.get("/", function (req, res) {
-  let retrieveBookPromise = new Promise((resolve, reject) => {
+  let retrieveBookListPromise = new Promise((resolve, reject) => {
     if (Object.keys(books).length === 0) {
       reject({ message: "No books available" });
     } else {
@@ -18,8 +18,10 @@ public_users.get("/", function (req, res) {
     }
   });
 
-  retrieveBookPromise.then(() => {
+  retrieveBookListPromise.then(() => {
     return res.status(200).send(books);
+  }).catch((error) => {
+    return res.status(404).json({ message: error });
   });
 });
 
@@ -27,28 +29,42 @@ public_users.get("/", function (req, res) {
 public_users.get("/isbn/:isbn", function (req, res) {
   let isbn = req.params.isbn;
 
-  if (books[isbn] !== undefined) {
+  let retrieveBookByIsbnPromise = new Promise((resolve, reject) => {
+    if (books[isbn] === undefined) {
+      reject({ message: "Book not found" });
+    } else {
+      resolve();
+    }
+  });
+
+  retrieveBookByIsbnPromise.then(() => {
     return res.status(200).json(books[isbn]);
-  } else {
+  }).catch((error) => {
     return res.status(404).json({ message: "Book not found" });
-  }
+  });
 });
 
 // Get book details based on author
 public_users.get("/author/:author", function (req, res) {
   let author = req.params.author;
 
-  let author_books = Object.values(books).filter(
-    (book) => book.author === author
-  );
+  let retrieveBookListByAuthorPromise = new Promise((resolve, reject) => {
+    let author_books = Object.values(books).filter(
+      (book) => book.author === author
+    );
 
-  console.log(author_books);
+    if (author_books.length > 0) {
+      resolve(author_books);
+    } else {
+      reject({ message: "Author not found" });
+    }
+  });
 
-  if (author_books.length > 0) {
+  retrieveBookListByAuthorPromise.then((author_books) => {
     return res.status(200).json(author_books);
-  } else {
-    return res.status(404).json({ message: "Author not found" });
-  }
+  }).catch((error) => {
+    return res.status(404).json({ message: error });
+  });
 });
 
 // Get all books based on title
